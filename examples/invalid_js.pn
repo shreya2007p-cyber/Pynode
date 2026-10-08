@@ -1,0 +1,8 @@
+[python]
+print("Python is working")
+[/python]
+
+[js]
+console.log("JavaScript started")
+this_is_invalid_code
+[/js]

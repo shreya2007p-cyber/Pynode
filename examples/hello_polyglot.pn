@@ -1,0 +1,7 @@
+[python]
+print("Hello from Python")
+[/python]
+
+[js]
+console.log("Hello from JavaScript")
+[/js]
