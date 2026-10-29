@@ -1,0 +1,9 @@
+
+[python]
+name = "Shreya"
+[/python]
+
+[js]
+console.log("JavaScript started");
+throw new Error("Test JS failure");
+[/js]

@@ -1,6 +1,7 @@
 import ast
 
 
+
 def parse(source_code):
     python_start_tag = "[python]"
     python_end_tag = "[/python]"
@@ -8,8 +9,21 @@ def parse(source_code):
     js_start_tag = "[js]"
     js_end_tag = "[/js]"
 
+    if source_code.count(python_start_tag) > 1:
+        raise SyntaxError("Duplicate [python] block")
+
+    if source_code.count(js_start_tag) > 1:
+        raise SyntaxError("Duplicate [js] block")
+
+    if source_code.count(python_end_tag) > 1:
+        raise SyntaxError("Duplicate [/python] block")
+
+    if source_code.count(js_end_tag) > 1:
+        raise SyntaxError("Duplicate [/js] block")
+
     python_start = source_code.find(python_start_tag)
     python_end = source_code.find(python_end_tag)
+
 
     if python_start == -1:
         raise SyntaxError("Missing [python] block")
@@ -31,6 +45,28 @@ def parse(source_code):
 
     if js_end < js_start:
         raise SyntaxError("[/js] appears before [js]")
+
+
+    if js_start < python_end and python_start < js_end:
+        raise SyntaxError("[python] and [js] blocks overlap")
+
+    if js_start < python_start:
+        raise SyntaxError("[js] block must come after [python] block")
+
+
+    # Reject non-whitespace text outside the two blocks.
+    before_python = source_code[:python_start]
+    between_blocks = source_code[python_end + len(python_end_tag):js_start]
+    after_javascript = source_code[js_end + len(js_end_tag):]
+
+    if before_python.strip():
+        raise SyntaxError("Unexpected text before [python] block")
+
+    if between_blocks.strip():
+        raise SyntaxError("Unexpected text between [python] and [js] blocks")
+
+    if after_javascript.strip():
+        raise SyntaxError("Unexpected text after [/js] block")
 
     python_start += len(python_start_tag)
     js_start += len(js_start_tag)

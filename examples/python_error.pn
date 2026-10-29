@@ -1,0 +1,9 @@
+
+[python]
+print(unknown_variable)
+[/python]
+
+[js]
+console.log("JavaScript should not run");
+[/js]
+

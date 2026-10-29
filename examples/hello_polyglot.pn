@@ -1,7 +1,10 @@
+
 [python]
-print("Hello from Python")
+name = "Shreya"
 [/python]
 
 [js]
-console.log("Hello from JavaScript")
+pynode.score = 95
+console.log("JavaScript read:", pynode.name)
+console.log("JavaScript set score:", pynode.score)
 [/js]

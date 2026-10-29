@@ -1,6 +1,9 @@
 import sys
 from pn.parser import parse
 from pn.executor import execute
+from pn.runtime import RuntimeContext
+from pathlib import Path
+
 
 from pn.js_executor import execute_js
 
@@ -37,9 +40,18 @@ def main():
                 return
 
             file_path = sys.argv[2]
+            if Path(file_path).suffix.lower() != ".pn":
+                print("Pynode File Error: Only .pn files are supported")
+                return
 
-            with open(file_path, "r") as file:
-                source_code = file.read()
+
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    source_code = file.read()
+            except OSError as error:
+                print(f"Pynode File Error: {error}")
+                return
+
 
             print("Pynode: source code loaded")
 
@@ -51,10 +63,18 @@ def main():
 
             print("Pynode: source code parsed")
 
-            execute(python_program)
+
+            context = RuntimeContext()
 
             try:
-                execute_js(js_code)
+                execute(python_program, context)
+            except Exception as error:
+                print(f"Pynode Python Error: {error}")
+                return
+
+
+            try:
+                context.data.update(execute_js(js_code, context.data))
             except RuntimeError as error:
                 print(f"Pynode JS Error: {error}")
                 return
