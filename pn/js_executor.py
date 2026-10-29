@@ -4,6 +4,7 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+from pn.values import validate_context
 
 
 def execute_js(js_code, context=None):
@@ -11,7 +12,8 @@ def execute_js(js_code, context=None):
         context = {}
 
     try:
-        context_json = json.dumps(context)
+        validate_context(context)
+        context_json = json.dumps(context, allow_nan=False)
     except (TypeError, ValueError) as error:
         raise RuntimeError(
             f"Python context is not JSON-serializable: {error}"

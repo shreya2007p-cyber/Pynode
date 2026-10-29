@@ -1,0 +1,18 @@
+
+[python]
+student = {
+    "name": "Shreya",
+    "marks": {
+        "math": 95
+    }
+}
+print("Before JavaScript:", student)
+[/python]
+
+[js]
+pynode.student.marks.math = 99
+pynode.student.marks.science = 92
+console.log("Updated math:", pynode.student.marks.math)
+console.log("Science:", pynode.student.marks.science)
+[/js]
+

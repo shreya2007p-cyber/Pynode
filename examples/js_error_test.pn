@@ -1,0 +1,10 @@
+
+[python]
+name = "Shreya"
+print("Python execution completed")
+[/python]
+
+[js]
+console.log("JavaScript execution started")
+throw new Error("Intentional JavaScript test error")
+[/js]

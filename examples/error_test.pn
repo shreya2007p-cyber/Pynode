@@ -1,0 +1,9 @@
+
+[python]
+print("Python execution started")
+raise ValueError("Intentional test error")
+[/python]
+
+[js]
+console.log("This should not execute")
+[/js]

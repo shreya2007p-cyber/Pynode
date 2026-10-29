@@ -1,4 +1,4 @@
-
+﻿
 import ast
 import unittest
 
@@ -9,9 +9,50 @@ from pn.parser import parse
 
 
 class TestRuntime(unittest.TestCase):
-    
+
+
+    def test_value_model_accepts_supported_values(self):
+        from pn.values import validate_context
+
+        context = {
+            "none": None,
+            "boolean": True,
+            "integer": 42,
+            "float": 3.14,
+            "string": "Pynode",
+            "list": [1, "two", False, None],
+            "nested": {"score": 95},
+        }
+
+        validate_context(context)
+
+    def test_value_model_rejects_set(self):
+        from pn.values import validate_context
+
+        with self.assertRaisesRegex(
+            TypeError, "unsupported value type: set"
+        ):
+            validate_context({"items": {1, 2, 3}})
+
+    def test_value_model_rejects_non_string_keys(self):
+        from pn.values import validate_context
+
+        with self.assertRaisesRegex(
+            TypeError, "non-string dictionary key"
+        ):
+            validate_context({"metadata": {1: "invalid"}})
+
+    def test_value_model_rejects_non_finite_numbers(self):
+        from pn.values import validate_context
+
+        with self.assertRaisesRegex(
+            ValueError, "non-finite number"
+        ):
+            validate_context({"score": float("nan")})
+
+
     def test_python_variables_enter_context(self):
-        
+
         context = RuntimeContext()
         program = ast.parse(
             'name = "Shreya"\nage = 20'
@@ -22,7 +63,7 @@ class TestRuntime(unittest.TestCase):
         self.assertEqual(context.data["name"], "Shreya")
         self.assertEqual(context.data["age"], 20)
 
-    
+
     def test_execute_without_context(self):
         program = ast.parse('name = "Shreya"')
 
@@ -32,7 +73,7 @@ class TestRuntime(unittest.TestCase):
         self.assertEqual(context["name"], "Shreya")
 
 
-    
+
     def test_non_serializable_context_raises_clear_error(self):
         with self.assertRaisesRegex(
             RuntimeError,
@@ -42,7 +83,7 @@ class TestRuntime(unittest.TestCase):
                 'console.log("This should not run");',
                 {"items": {1, 2, 3}}
             )
-    
+
     def test_non_serializable_javascript_context_raises_clear_error(self):
         with self.assertRaisesRegex(
             RuntimeError,
@@ -102,7 +143,7 @@ name = "Shreya"
         ):
             parse(source_code)
 
-    
+
     def test_missing_python_closing_tag_is_rejected(self):
         source_code = """
 [python]
@@ -119,7 +160,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-    
+
     def test_missing_javascript_closing_tag_is_rejected(self):
         source_code = """
 [python]
@@ -136,7 +177,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-    
+
     def test_duplicate_python_block_is_rejected(self):
         source_code = """
 [python]
@@ -158,7 +199,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-   
+
     def test_duplicate_javascript_block_is_rejected(self):
         source_code = """
 [python]
@@ -180,7 +221,7 @@ console.log("Second block");
         ):
             parse(source_code)
 
-    
+
     def test_duplicate_python_closing_tag_is_rejected(self):
         source_code = """
 [python]
@@ -199,7 +240,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-    
+
     def test_duplicate_javascript_closing_tag_is_rejected(self):
         source_code = """
 [python]
@@ -218,7 +259,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-    
+
     def test_nested_javascript_block_is_rejected(self):
         source_code = """
 [python]
@@ -237,7 +278,7 @@ console.log("Hello");
         ):
             parse(source_code)
 
-    
+
     def test_valid_polyglot_source_is_parsed(self):
         source_code = """
 [python]
@@ -258,7 +299,7 @@ console.log(pynode.name);
       )
         self.assertIn("console.log(pynode.name);", js_code)
 
-    
+
     def test_empty_python_block_is_rejected(self):
         source_code = """
 [python]
@@ -276,7 +317,7 @@ console.log("Hello");
             parse(source_code)
 
 
-    
+
     def test_empty_javascript_block_is_rejected(self):
         source_code = """
 [python]
@@ -293,7 +334,7 @@ name = "Shreya"
         ):
             parse(source_code)
 
-    
+
     def test_invalid_python_syntax_is_rejected(self):
         source_code = """
 [python]
@@ -309,8 +350,8 @@ console.log("Hello");
         with self.assertRaises(SyntaxError):
             parse(source_code)
 
-    
-    
+
+
     def test_text_before_python_block_is_rejected(self):
         source_code = """
 Unexpected text here.
@@ -330,7 +371,7 @@ console.log(pynode.name);
         ):
             parse(source_code)
 
-    
+
     def test_text_between_blocks_is_rejected(self):
         source_code = """
 [python]
@@ -369,7 +410,7 @@ Unexpected text here.
         ):
             parse(source_code)
 
-    
+
     def test_execute_with_plain_dictionary_context(self):
         program = ast.parse(
             'name = "Shreya"\nscore = 95'
@@ -382,7 +423,7 @@ Unexpected text here.
         self.assertEqual(context["name"], "Shreya")
         self.assertEqual(context["score"], 95)
 
-    
+
     def test_existing_variable_is_updated(self):
         context = {"score": 80}
         program = ast.parse("score = score + 15")
@@ -391,7 +432,7 @@ Unexpected text here.
 
         self.assertEqual(context["score"], 95)
 
-    
+
     def test_python_internal_variables_are_not_shared(self):
         context = {}
         program = ast.parse('name = "Shreya"')
@@ -439,6 +480,130 @@ Unexpected text here.
         self.assertEqual(result["score"], 95)
         self.assertEqual(result["name"], "Shreya")
         self.assertEqual(result["city"], "Lucknow")
+
+
+    def test_set_and_get(self):
+        from pn.runtime import RuntimeContext
+
+        context = RuntimeContext()
+        context.set("name", "Shreya")
+
+        self.assertEqual(context.get("name"), "Shreya")
+
+    def test_update_multiple_values(self):
+        from pn.runtime import RuntimeContext
+
+        context = RuntimeContext()
+        context.update({"score": 95, "level": 4})
+
+        self.assertEqual(context.get("score"), 95)
+        self.assertEqual(context.get("level"), 4)
+
+    def test_snapshot_is_independent_copy(self):
+        from pn.runtime import RuntimeContext
+
+        context = RuntimeContext()
+        context.set("score", 95)
+
+        snapshot = context.snapshot()
+        snapshot["score"] = 0
+
+        self.assertEqual(context.get("score"), 95)
+
+
+    def test_javascript_nested_updates_return_to_python(self):
+        from pn.js_executor import execute_js
+
+        context = {
+            "student": {
+                "name": "Shreya",
+                "marks": {"math": 95}
+            }
+        }
+
+        result = execute_js(
+            "pynode.student.marks.math = 99; "
+            "pynode.student.marks.science = 92;",
+            context
+        )
+
+        self.assertEqual(result["student"]["marks"]["math"], 99)
+        self.assertEqual(result["student"]["marks"]["science"], 92)
+        self.assertEqual(result["student"]["name"], "Shreya")
+
+
+    def test_javascript_preserves_json_compatible_edge_values(self):
+        from pn.js_executor import execute_js
+
+        context = {
+            "empty": "",
+            "count": 0,
+            "enabled": True,
+            "disabled": False,
+            "nothing": None,
+            "items": [1, 2, 3],
+        }
+
+        result = execute_js(
+            "pynode.empty = pynode.empty + 'ok'; "
+            "pynode.count = pynode.count + 1; "
+            "pynode.enabled = false; "
+            "pynode.disabled = true; "
+            "pynode.nothing = 'filled'; "
+            "pynode.items.push(4);",
+            context
+        )
+
+        self.assertEqual(result["empty"], "ok")
+        self.assertEqual(result["count"], 1)
+        self.assertFalse(result["enabled"])
+        self.assertTrue(result["disabled"])
+        self.assertEqual(result["nothing"], "filled")
+        self.assertEqual(result["items"], [1, 2, 3, 4])
+
+
+    def test_python_javascript_shared_context_round_trip(self):
+        context = RuntimeContext()
+
+        execute(
+            'student = {"name": "Shreya", "score": 90}',
+            context
+        )
+
+        js_result = execute_js(
+            "pynode.student.score = 95;",
+            context.data
+        )
+
+        context.update(js_result)
+
+        self.assertEqual(context.get("student")["score"], 95)
+        self.assertEqual(context.get("student")["name"], "Shreya")
+
+
+    def test_bridge_rejects_non_finite_python_values(self):
+        from pn.js_executor import execute_js
+
+        with self.assertRaisesRegex(
+            RuntimeError, "non-finite number"
+        ):
+            execute_js(
+                "pynode.checked = true;",
+                {"score": float("nan")},
+            )
+
+    def test_bridge_rejects_non_string_dictionary_keys(self):
+        from pn.js_executor import execute_js
+
+        with self.assertRaisesRegex(
+            RuntimeError, "non-string dictionary key"
+        ):
+            execute_js(
+                "pynode.checked = true;",
+                {"metadata": {1: "invalid"}},
+            )
+
+
 
 if __name__ == "__main__":
     unittest.main()
